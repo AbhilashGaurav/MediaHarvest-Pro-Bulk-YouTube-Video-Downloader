@@ -12,7 +12,7 @@ def download_youtube_video(link, output_path, quality):
         if duration <= 120:
             video = yt.streams.filter(res=quality).first()
             video.download(output_path)
-            st.write(f"Video '{yt.title}' ({quality}) has been downloaded successfully.")
+            st.write(f"Video '{yt.title}' ({quality}) received from the server Successfully")
             return True
         else:
             st.write(f"Video '{yt.title}' has a duration of {duration} seconds and exceeds 120 seconds.")
@@ -22,9 +22,11 @@ def download_youtube_video(link, output_path, quality):
         st.write(e)
         return False
 
+
 # Set the title of the Streamlit app
 st.title("YouTube Video Downloader (Under 120 Seconds)")
-
+# Initialize selected_video_links as an empty list
+selected_video_links = []
 # Add a file uploader for the user to upload a text file containing YouTube links
 video_links_file = st.file_uploader("Upload a text file with YouTube video links:", type=["txt"])
 
@@ -49,7 +51,7 @@ if video_links_file:
         select_all = st.checkbox("Select All")
 
         # Create a selectbox for the user to choose video quality
-        video_quality = st.selectbox("Select Video Quality:", ["360p", "720p", "1080p"])
+        video_quality = st.selectbox("Select Video Quality:", ["144p","360p", "720p", "1080p"])
 
         # Iterate through the list of video links and display a checkbox for each
         for link in youtube_links:
@@ -62,11 +64,12 @@ if video_links_file:
                 selected_video_links.append(link)
 
         # Provide a button to download the selected videos
-        if st.button("Download Selected Videos"):
-            for link in selected_video_links:
-                success = download_youtube_video(link, output_folder, video_quality)
-                if not success:
-                    failed_downloads.append(link)
+        if selected_video_links:
+            if st.button("Download Selected Videos"):
+                for link in selected_video_links:
+                    success = download_youtube_video(link, output_folder, video_quality)
+                    if not success:
+                        failed_downloads.append(link)
 
         # Provide a link to download the failed links as a text file
         if failed_downloads:
@@ -80,29 +83,22 @@ if video_links_file:
     except Exception as e:
         st.error(f"An error occurred: {str(e)}")
 
+# Check if the output_folder contains downloaded videos before showing the "Download All Videos as ZIP" button
+if os.listdir(output_folder):
+    if st.button("Download All Videos as ZIP"):
+
+        # Create a ZIP file containing all videos
+        zip_filename = "downloaded_videos.zip"
+        with zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(output_folder):
+                for file in files:
+                    zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), output_folder))
+
+        # Provide a download link for the ZIP file
+        with open(zip_filename, "rb") as zip_file:
+            zip_data = zip_file.read()
+        st.download_button(label="Confirm Download", data=zip_data, file_name=zip_filename)
+
 # If no video links file has been uploaded, display a message to the user
 else:
     st.warning("Please upload a text file containing YouTube video links.")
-
-# Add a button to download all videos as a ZIP file
-if st.button("Download All Videos as ZIP"):
-    # Create a temporary folder to store videos
-    temp_folder = "temp_download"
-    if not os.path.exists(temp_folder):
-        os.makedirs(temp_folder)
-
-    # Copy downloaded videos to the temporary folder
-    for filename in os.listdir(output_folder):
-        shutil.copy(os.path.join(output_folder, filename), os.path.join(temp_folder, filename))
-
-    # Create a ZIP file containing all videos
-    zip_filename = "downloaded_videos.zip"
-    with zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
-        for root, _, files in os.walk(temp_folder):
-            for file in files:
-                zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), temp_folder))
-
-    # Provide a download link for the ZIP file
-    with open(zip_filename, "rb") as zip_file:
-        zip_data = zip_file.read()
-    st.download_button(label="Download All Videos as ZIP", data=zip_data, file_name=zip_filename)
