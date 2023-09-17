@@ -1,9 +1,8 @@
 import streamlit as st
 from pytube import YouTube
 import os
-import shutil
 import zipfile
-
+import shutil
 # Function to download YouTube video under 120 seconds
 def download_youtube_video(link, output_path, quality):
     try:
@@ -21,7 +20,6 @@ def download_youtube_video(link, output_path, quality):
         st.write(f"Error occurred while downloading the video from: {link}")
         st.write(e)
         return False
-
 
 # Set the title of the Streamlit app
 st.title("YouTube Video Downloader (Under 120 Seconds)")
@@ -51,7 +49,7 @@ if video_links_file:
         select_all = st.checkbox("Select All")
 
         # Create a selectbox for the user to choose video quality
-        video_quality = st.selectbox("Select Video Quality:", ["144p","360p", "720p", "1080p"])
+        video_quality = st.selectbox("Select Video Quality:", ["144p", "360p", "720p", "1080p"])
 
         # Iterate through the list of video links and display a checkbox for each
         for link in youtube_links:
@@ -86,7 +84,6 @@ if video_links_file:
 # Check if the output_folder contains downloaded videos before showing the "Download All Videos as ZIP" button
 if os.listdir(output_folder):
     if st.button("Download All Videos as ZIP"):
-
         # Create a ZIP file containing all videos
         zip_filename = "downloaded_videos.zip"
         with zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -98,6 +95,17 @@ if os.listdir(output_folder):
         with open(zip_filename, "rb") as zip_file:
             zip_data = zip_file.read()
         st.download_button(label="Confirm Download", data=zip_data, file_name=zip_filename)
+
+        # Delete all files in the output_folder to empty it
+        for file in os.listdir(output_folder):
+            file_path = os.path.join(output_folder, file)
+            try:
+                if os.path.isfile(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                st.error(f"An error occurred while deleting files: {str(e)}")
 
 # If no video links file has been uploaded, display a message to the user
 else:
