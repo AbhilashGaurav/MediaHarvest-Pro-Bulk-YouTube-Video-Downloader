@@ -96,9 +96,10 @@ from pytube import YouTube
 import os
 import zipfile
 import shutil
+import json
 
 # Function to download YouTube video under a specified duration limit
-def download_youtube_video(link, output_path, quality, duration_limit):
+def download_youtube_video(link, output_path, quality, duration_limit=None):
     try:
         yt = YouTube(link)
         duration = yt.length  # Duration in seconds
@@ -137,15 +138,7 @@ all_fetched_links = []
 # Initialize a list to store selected video URLs
 selected_videos = []
 
-# Checkbox to enable/disable duration limit
-enable_duration_limit = st.checkbox("Enable Duration Limit")
-
-# Set default duration limit value
-duration_limit = None
-
-# If duration limit is enabled, display the slider
-if enable_duration_limit:
-    duration_limit = st.slider("Set Duration Limit (seconds):", min_value=1, max_value=600, value=120)
+search_response = {}
 
 if st.button("Search"):
     try:
@@ -160,27 +153,45 @@ if st.button("Search"):
                 maxResults=10,  # Adjust the number of results as needed
                 part="snippet"  # Include 'snippet' data in the response
             ).execute()
-
-            # Display search results
-            for search_result in search_response.get("items", []):
-                video_title = search_result["snippet"]["title"]
-                video_url = f'https://www.youtube.com/watch?v={search_result["id"]["videoId"]}'
-                thumbnail_url = search_result["snippet"]["thumbnails"]["default"]["url"]
-                all_fetched_links.append({"title": video_title, "url": video_url, "thumbnail": thumbnail_url})
-
-                selected = st.checkbox(f"Select '{video_title}'", value=video_url in selected_videos)
-                if selected:
-                    selected_videos.append(video_url)
-
-                st.write(f"**Title:** {video_title}")
-                st.image(thumbnail_url)
-
+            # st.write(type(search_response))
+            search_response_json= json.dumps(search_response)
+            filename = "json_search_response.json"
+            with open(filename, 'w') as json_file:
+                json_file.write(search_response_json)
         else:
             st.warning("Please enter a search query.")
     except Exception as e:
         pass
 
+def display_results(search_response):
+    if search_response:
+        for search_result in search_response.get("items", []):
+            video_title = search_result["snippet"]["title"]
+            video_url = f'https://www.youtube.com/watch?v={search_result["id"]["videoId"]}'
+            thumbnail_url = search_result["snippet"]["thumbnails"]["default"]["url"]
+            all_fetched_links.append({"title": video_title, "url": video_url, "thumbnail": thumbnail_url})
+            # selected = st.checkbox(f"Select '{video_title}'", value=video_url in selected_videos)
+            # if selected:
+            #     selected_videos.append(video_url)
+            st.write(f"**Title:** {video_title}")
+            st.image(thumbnail_url)
+            # call(all_fetched_links)
 # Display selected videos
+# display_results(search_response)
+
+file_name = "json_search_response.json"  # Replace with your file name
+
+# Open the JSON file for reading
+with open(file_name, 'r') as json_file:
+    # Parse the JSON data into a Python dictionary
+    data = json.load(json_file)
+for item in data.get('items', []):
+    video_url=f'https://www.youtube.com/watch?v={item["id"]["videoId"]}'
+    video_title = item["snippet"]["title"]
+    selected = st.checkbox(f"Select '{video_title}'", value=video_url)
+    if selected:
+        selected_videos.append(video_url)
+
 if selected_videos:
     st.subheader("Selected Videos:")
     for selected_video_url in selected_videos:
@@ -190,7 +201,7 @@ if selected_videos:
 if selected_videos:
     if st.button("Download Selected Videos"):
         for link in selected_videos:
-            success = download_youtube_video(link, output_folder, "720p", duration_limit)
+            success = download_youtube_video(link, output_folder, "720p")
             if not success:
                 failed_downloads.append(link)
 
