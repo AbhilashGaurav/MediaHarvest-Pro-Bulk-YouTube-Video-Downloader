@@ -126,6 +126,7 @@ def select_videos():
             with col1:
                 st.video(a)
                 selected = st.checkbox(f"Select {video_title}")
+                st.divider()
                 if selected:
                     selected_videos.append(video_url)
             mark+=1
@@ -133,6 +134,7 @@ def select_videos():
             with col2:
                 st.video(a)
                 selected = st.checkbox(f"Select '{video_title}'")
+                st.divider()
                 if selected:
                     selected_videos.append(video_url)
             mark+=1
@@ -140,12 +142,14 @@ def select_videos():
             with col3:
                 st.video(a)
                 selected = st.checkbox(f"Select '{video_title}'")
+                st.divider()
                 if selected:
                     selected_videos.append(video_url)
 
 
     if selected_videos:
         st.sidebar.subheader("Selected Videos:")
+        st.sidebar.button("Download videos")
         for selected_video_url in selected_videos:
             st.sidebar.write(selected_video_url)
 
