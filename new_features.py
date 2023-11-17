@@ -23,23 +23,6 @@ if st.session_state.count==0:
     with open(file_name, 'w') as file:
         json.dump(empty_data, file)
 
-# Function to download YouTube video under a specified duration limit
-def download_youtube_video(link, output_path, quality, duration_limit=None):
-    try:
-        yt = YouTube(link)
-        duration = yt.length  # Duration in seconds
-        if duration_limit is None or duration <= duration_limit:
-            video = yt.streams.filter(res=quality).first()
-            video.download(output_path)
-            st.write(f"✅ Video '{yt.title}' ({quality}) received from the server Successfully")
-            return True
-        else:
-            st.write(f"❌ Video '{yt.title}' has a duration of {duration} seconds and exceeds the {duration_limit} seconds limit.")
-            return False
-    except Exception as e:
-        st.write(f"❌ Error occurred while downloading the video from: {link}")
-        return False
-
 # Set the title of the Streamlit app
 st.title("YouTube Video Search and Downloader")
 
@@ -55,7 +38,7 @@ failed_downloads = []
 search_query = st.text_input("Enter your YouTube search query:")
 
 # YouTube Data API key (replace with your API key)
-api_key = ""
+api_key = "AIzaSyBZbpgzQJKPiXAxUCzkRre8sI3zYDaoAow"
 
 # Initialize a list to store video data
 all_fetched_links = []
@@ -88,20 +71,6 @@ if st.button("Search"):
             st.warning("Please enter a search query.")
     except Exception as e:
         pass
-
-# def store_results(search_response):
-#     if search_response:
-#         for search_result in search_response.get("items", []):
-#             video_title = search_result["snippet"]["title"]
-#             video_url = f'https://www.youtube.com/watch?v={search_result["id"]["videoId"]}'
-#             thumbnail_url = search_result["snippet"]["thumbnails"]["default"]["url"]
-#             all_fetched_links.append({"title": video_title, "url": video_url, "thumbnail": thumbnail_url})
-#             # selected = st.checkbox(f"Select '{video_title}'", value=video_url in selected_videos)
-#             # if selected:
-#             #     selected_videos.append(video_url)
-#             st.write(f"**Title:** {video_title}")
-#             st.image(thumbnail_url)
-
 
 def select_videos():
 
@@ -149,22 +118,43 @@ def select_videos():
 
     if selected_videos:
         st.sidebar.subheader("Selected Videos:")
-        st.sidebar.button("Download videos")
+        # st.sidebar.button("Download videos")
         for selected_video_url in selected_videos:
             st.sidebar.write(selected_video_url)
 
+select_videos()
+
+
+# Function to download YouTube video under a specified duration limit
+def download_youtube_video(link, output_path, quality):
+    try:
+        yt = YouTube(link)#,use_oauth=True, allow_oauth_cache=True)
+        # duration = 100 #yt.length if yt.length is not None else 0  # Duration in seconds
+        # if duration_limit is None or duration <= duration_limit:
+        video = yt.streams.filter(res=quality).first()
+        video.download(output_path)
+        st.write(f"✅ Video '{yt.title}' ({quality}) received from the server Successfully")
+        # return True
+        # else:
+            # st.write(f"❌ Video '{yt.title}' has a duration of {duration} seconds and exceeds the {duration_limit} seconds limit.")
+            # return False
+    except Exception as e:
+        st.write(f"❌ Error occurred while downloading the video from: {link}")
+        # st.write(e)
+        return False
+
 # # Provide a button to download the selected videos
-# if selected_videos:
-#     if st.button("Download Selected Videos"):
-#         for link in selected_videos:
-#             success = download_youtube_video(link, output_folder, "720p")
-#             if not success:
-#                 failed_downloads.append(link)
+if selected_videos:
+    video_quality = st.sidebar.selectbox("Select Video Quality:", ["144p", "360p", "720p", "1080p"])
+    if st.button("Download Selected Videos"):
+        for link in selected_videos:
+            success = download_youtube_video(link, output_folder,video_quality)
+            if not success:
+                failed_downloads.append(link)
 
 # # Provide a link to download the failed links as a text file
-# if failed_downloads:
-#     failed_links_file_path = os.path.join(output_folder, "failed_links.txt")
-#     with open(failed_links_file_path, "w") as failed_file:
-#         for link in failed_downloads:
-#             failed_file.write(link + "\n")
-select_videos()
+if failed_downloads:
+    failed_links_file_path = os.path.join(output_folder, "failed_links.txt")
+    with open(failed_links_file_path, "w") as failed_file:
+        for link in failed_downloads:
+            failed_file.write(link + "\n")
