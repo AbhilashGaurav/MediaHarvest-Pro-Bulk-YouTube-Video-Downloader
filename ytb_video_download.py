@@ -1,5 +1,5 @@
 import streamlit as st
-from pytube import YouTube
+from pytubefix import YouTube
 import os
 import zipfile
 import shutil
