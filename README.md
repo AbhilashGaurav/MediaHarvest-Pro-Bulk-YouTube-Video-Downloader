@@ -1,7 +1,15 @@
-# bulk_youtube_video_downloader
+# MediaHarvest Pro: Bulk YouTube Video Downloader
 
 Deployed Link:
 https://bulk-youtube-video-downloader.streamlit.app/
+
+New Features added
+![image](https://github.com/AbhilashGaurav/bulk_youtube_video_downloader/assets/84313712/23800386-d788-4cc4-bbe0-0105cfb7a787)
+
+Load more button:
+
+![image](https://github.com/AbhilashGaurav/bulk_youtube_video_downloader/assets/84313712/3f06c2a0-32c3-4b86-b1a5-71bcdb878046)
+
 
 It allows to download the bulk youtube videos downloaded just by providing the text file opted with youtube link in it.
 
