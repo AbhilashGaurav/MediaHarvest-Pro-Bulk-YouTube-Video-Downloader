@@ -1,7 +1,7 @@
 # MediaHarvest Pro: Bulk YouTube Video Downloader
 
 Deployed Link:
-https://bulk-youtube-video-downloader.streamlit.app/
+https://mediaharvest-pro-bulk-youtube-video-downloader.streamlit.app/
 
 New Features added
 ![image](https://github.com/AbhilashGaurav/bulk_youtube_video_downloader/assets/84313712/23800386-d788-4cc4-bbe0-0105cfb7a787)
